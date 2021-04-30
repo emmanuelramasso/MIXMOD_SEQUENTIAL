@@ -48,7 +48,7 @@ The set of .mat files available at the [repository link](https://tobedone.html) 
 If you make use of this code in your work, please refer to [1]:
 
 ```
-@misc{gmmseq_acoustic_emission_2021,
+@article{gmmseq_acoustic_emission_2021,
       title={Clustering acoustic emission data stream with sequentially appearing clusters using mixture models}, 
       author={Emmanuel Ramasso and Thierry Denoeux and Gael Chevallier},
       year={2021},
@@ -61,7 +61,7 @@ If you make use of this code in your work, please refer to [1]:
 If you make use of the data, please refer to [2]:
 
 ```
-@misc{orion_ae_datasets,
+@article{orion_ae_datasets,
       title={ORION-AE: Multisensor acoustic emission datasets reflecting supervised untightening of bolts in a jointed structure under vibration}, 
       author={Benoit Verdin and G. Chevallier and Emmanuel Ramasso},
       year={2021},
