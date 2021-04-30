@@ -1,6 +1,6 @@
 ![alt text](.images/header.png)
 
-This is the implementation of -@gmmseq_acoustic_emission_2021, which makes use of simulated data (reproducible from these codes) as well as real data -@orion_ae_datasets. For ORION-AE data description, check -@orion_ae_datasets and its [Dataverse repository](https://doi.org/10.7910/DVN/FBRDU0). 
+This is the implementation of [1], which makes use of simulated data (reproducible from these codes) as well as real data [2]. For ORION-AE data description, check [2] and its [Dataverse repository](https://doi.org/10.7910/DVN/FBRDU0). 
 
 ## GMMSEQ: Gaussian Mixture Model with sequentially appearing clusters
 
@@ -39,13 +39,13 @@ Their use is illustrated with as many comments as possible in `main_test_simulat
 
 Have a look in repository `tests`:
 - `main_test_simulated_data_withCriteres_v2.m` allows to focus on Section 1 of the tests.
-- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features. You can reproduce results of -@gmmseq_acoustic_emission_2021 for measurements "B" only as said above.
+- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features. You can reproduce results of [1] for measurements "B" only as said above.
 
-The set of .mat files available at the [repository link](https://tobedone.html) represent a set of features obtained from raw series of measurements in ORION-AE -@orion_ae_datasets. Features have been obtained by a method described in -@gmmseq_acoustic_emission_2021, in Section "Signal Processing" relying on -@detection_ae_signals_noise. This matrix allows to reproduce some of the figures of the paper.
+The set of .mat files available at the [repository link](https://tobedone.html) represent a set of features obtained from raw series of measurements in ORION-AE [2]. Features have been obtained by a method described in [1], in Section "Signal Processing" relying on [3]. This matrix allows to reproduce some of the figures of the paper.
 
 ## Cite
 
-If you make use of this code in your work, please refer to:
+If you make use of this code in your work, please refer to [1]:
 
 ```
 @misc{gmmseq_acoustic_emission_2021,
@@ -58,7 +58,7 @@ If you make use of this code in your work, please refer to:
 }
 ```
 
-If you make use of the data, please refer to:
+If you make use of the data, please refer to [2]:
 
 ```
 @misc{orion_ae_datasets,
@@ -72,7 +72,7 @@ If you make use of the data, please refer to:
 ```
 
 
-If you make use of the features, please refer to:
+If you make use of the features, please refer to [3]:
 
 ```
 @article{detection_ae_signals_noise,
