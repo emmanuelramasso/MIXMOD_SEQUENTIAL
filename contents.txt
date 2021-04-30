@@ -1,0 +1,102 @@
+*************************** 
+***************************  
+      Main Content 
+(not all functions listed)
+***************************  
+*************************** 
+
+Directories:
+- utils: some codes for some plots
+- GMMseq_functions: codes related to the optimization of GMMseq
+- tests: test codes used for the paper
+- features_measB_ORIONAE_datasets: contains the features for measurements B
+- external: a set of functions you an use if you do not have machine learning and optimisation toolboxes of matlab.
+
+Note 1: Tests were based on MATLAB 2020b on Linux. 
+
+
+//////////////////////////////
+main_test_simulated_data.m
+
+We initialise a true model, generate the data 
+We run several initialisations of GMMseq and select the best model
+Results are plotted. Reproduce the results on simulated data.
+
+main_test_simulated_data_withCriteres_v2.m
+Similar to the previous with more figures and criterion (AIC and so on).
+
+test_selection_models_GMMSEQ_via_histTau.m
+Run GMMseq on real data.
+
+
+//////////////////////////////
+data_generation.m
+
+Generate a dataset given a model
+
+
+//////////////////////////////
+reproduce_figures_2_and_3.m
+
+Reproduce figures 2 and 3 of our paper.
+
+
+//////////////////////////////
+test_check_likelihood_contour.m
+
+Plot the likelihood of a pair of parameters
+Check that it is locally Gaussian at the optimum
+
+
+//////////////////////////////
+GMMSEQ_init.m
+
+Initialise a GMMseq model
+Set all fields properly.
+
+
+//////////////////////////////
+GMMSEQ_train.m
+
+Estimate the parameters of a GMMseq model. 
+
+
+//////////////////////////////
+GMMSEQ_test.m
+
+Compute the posterior probability of clusters given data.
+
+
+//////////////////////////////
+GMMSEQ_loglikelihood.m
+
+Compute the loglikelihood of a model given data.
+
+
+//////////////////////////////
+Estep.m
+
+Performs Estep for GMMseq espected sufficient statistics. 
+
+
+//////////////////////////////
+auxiliaryFunction.m 
+
+Compute the value of the auxiliary function. 
+
+
+//////////////////////////////
+compute_gradients.m
+
+Compute the gradients for Mstep.
+
+
+//////////////////////////////
+setXfromParam.m 
+getParamFromX.m
+
+Used for getting the instrumental variables g/gamma, b/beta, xi/tau.
+
+
+
+
