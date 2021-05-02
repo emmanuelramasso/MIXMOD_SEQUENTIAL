@@ -39,9 +39,9 @@ Their use is illustrated with as many comments as possible in `main_test_simulat
 
 Have a look in repository `tests`:
 - `main_test_simulated_data_withCriteres_v2.m` allows to focus on Section 1 of the tests.
-- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features. You can reproduce results of [1] for measurements "B" only as said above.
+- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features for this part. For information, you can reproduce results of [1] by using features provided in the Drive-link below. 
 
-The set of .mat files available at the [repository link](https://tobedone.html) represent a set of features obtained from raw series of measurements in ORION-AE [2]. Features have been obtained by a method described in [1], in Section "Signal Processing" relying on [3]. This matrix allows to reproduce some of the figures of the paper.
+The set of .mat files available at the [repository link](https://drive.google.com/drive/folders/1hO_UegoLQTc0oDB8uRYsfLsKK94Gg7KM?usp=sharing) represent a set of features obtained from raw series of measurements in ORION-AE [2]. Features have been obtained by a method described in [1], in Section "Signal Processing" relying on [3]. These features matrices (using variables "P3") allow to reproduce the figures of the paper. 
 
 ## Cite
 
