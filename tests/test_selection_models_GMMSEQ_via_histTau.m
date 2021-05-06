@@ -74,7 +74,7 @@ disp(size(X))
 
 nessais = 10;% 10 with initmodel.minFunc.options.MaxIterations=1500;
 sharedCovariances = false;
-takePrior = true;
+takePrior = false; % true if you want to explore how the model behaves with prior on onsets
 if takePrior
     if dataCampaign == 'C' % for campaign C there is one element missing and set to 0, we remove it
         Kall = 6
@@ -90,8 +90,6 @@ end
 % PERFORM CLUSTERING 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 meth = {'segments','gmm','kmeans'}; % methods for initialisation
-modelesMVT = cell(nessais,length(Kall),length(meth));
-modelesMVTseq = cell(nessais,length(Kall),length(meth));
 modelesGMMseq = cell(nessais,length(Kall),length(meth));
 
 % we try it possibl'y several times
@@ -171,10 +169,10 @@ for essai = 1:nessais
                     end
                     
                     disp('GMM SEQ ARI')
-                    [ARI_est,~,~,~,C_est] = valid_RandIndex(Ytrain,clustersEstimated)
+                    [ARI_est,~,~,~,C_est] = valid_RandIndex(Ytrain,clustersEstimated);
                     disp(ARI_est)
                     disp('Initialisation ARI')
-                    [ARI_init,~,~,~,C_init] = valid_RandIndex(Ytrain,modele_GMM.initmodel.initialPartition)
+                    [ARI_init,~,~,~,C_init] = valid_RandIndex(Ytrain,modele_GMM.initmodel.initialPartition);
                     disp(ARI_init)
                     
                     modele_GMM.estim_ARI = ARI_est;
