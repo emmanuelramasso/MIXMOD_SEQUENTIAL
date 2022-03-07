@@ -8,11 +8,11 @@
 Directories:
 - utils: some codes for some plots
 - GMMseq_functions: codes related to the optimization of GMMseq
-- tests: test codes used for the paper
-- features_measB_ORIONAE_datasets: contains the features for measurements B
-- external: a set of functions you an use if you do not have machine learning and optimisation toolboxes of matlab.
+- tests_publication: test codes used for the paper. The codes are not very well documented in the repo. Send an email for further info.
+- external: a set of functions you an use if you do not have machine learning and optimisation toolboxes of matlab. Not sure that results will be the same if this option is activated. Matlab 2020b was used for the tests. 
+The root directory also contains main_test_simulated_data.m that shows how to use the GMMSEQ_init, train and eval for your data. 
 
-Note 1: Tests were based on MATLAB 2020b on Linux. 
+Note: Tests were based on MATLAB 2020b on Linux. 
 
 
 //////////////////////////////

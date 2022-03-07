@@ -23,7 +23,6 @@ function modele = GMMSEQ_train(data, time, initmodel)
 %       modele.x: beta, gamma and tau expressed with instrumental variables
 %       modele.loglik: loglikelihood of the model
 %       modele.history_loglik: history of likelihood
-%       modele.y: posterior probability
 %       modele.nb_clusters: number of clusters
 %       modele.T: max(time) if time provided
 %       modele.L: size of data
@@ -31,7 +30,6 @@ function modele = GMMSEQ_train(data, time, initmodel)
 %       modele.nparams: number of parameters in the model
 %       modele.criteria: AIC, BIC and ICL for the model 
 %       modele.convergenceProblem: indicates whether a pb occurs
-%       modele.partititonEstimated: cluster for each point
 %
 %   NOTE
 %
@@ -69,7 +67,7 @@ function modele = GMMSEQ_train(data, time, initmodel)
 K = initmodel.nb_clusters;
 [L,dx] = size(data);
 assert(size(time,1)==L);
-assert(all(diff(time)>0))
+assert(all(diff(time)>=0))
 T = max(time);
 assert(isfield(initmodel,'gamma') & isfield(initmodel,'beta') & isfield(initmodel,'tau'));
 muold = initmodel.mu;
@@ -81,6 +79,7 @@ end
 modele.T = T;
 modele.L = L;
 modele.convergenceProblem = false;
+initmodel.sizeMiniBatches = min(L,initmodel.sizeMiniBatches);
 
 if initmodel.sharedCovariances
     m = squeeze(mean(sigmaold,1));
@@ -99,9 +98,10 @@ histLL = zeros(initmodel.nitermax,1);
 histLL(1) = LL0;
 loopagain = true;
 cases = 0; 
-maxCases = 5;
+maxCases = 0;
 TrepK = time*ones(1,K, 'double');% replicated time instants for 1...K
 stored_norm = zeros(initmodel.nitermax,1); 
+stored_crit_forConvergenceCheck = zeros(initmodel.nitermax,2); 
 
 fprintf('GMMSEQ training...\n')
 totaltime = tic;
@@ -109,7 +109,7 @@ while loopagain
     
     if initmodel.verbosity
         disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        fprintf('Iteration %d\n',iter)
+        fprintf('Iteration %d (K=%d)\n',iter,K)
     end
     
     %%%%%%%%%%%%%%%%%%%%
@@ -156,8 +156,6 @@ while loopagain
            if initmodel.verbosity
                warning('I use previous estimates for covMat of cluster %d - sv', k);
            end
-           modele.convergenceProblem = true;
-           modele.convergenceProblemMessage = 'I use previous estimates for covMat of a cluster';
         end
     end
     
@@ -269,8 +267,8 @@ while loopagain
     if initmodel.verbosity
         fprintf('Ok.\n');
     end
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
     % check convergence
     [LLnew,ynew,alphanew,pinew] = GMMSEQ_loglikelihood(xnew, munew, sigmanew, K, T, data, TrepK, initmodel.useExternalFunctions);
 
@@ -285,10 +283,12 @@ while loopagain
     %avg_loglik = (abs(LLnew) + abs(LL0) + eps)/2.0;
     %cond1 = (delta_loglik / avg_loglik) < initmodel.deltaJmintoExit;
     %cond2 = abs(LLnew - LL0) < initmodel.thresholdLLdiff;
-    llmov = median(diff(histLL(max(1,iter-5):iter))); % median diff of loglik between iterations on a small window
+    llmov = median(abs(diff(histLL(max(1,iter-5):iter)))); % median diff of loglik between iterations on a small window
     cond2 = llmov < initmodel.thresholdLLdiff;
-    %cond2b = abs(LLnew - LL0) < initmodel.thresholdLLdiff/10; % difference lower but norm not enough
+    cond2b = llmov < initmodel.thresholdLLdiff/10;
+    
     cond3 = iter > initmodel.nitermax;   
+    
     thetaold = [xold(:); muold(:); sigmaold(:)];    
     thetanew = [xnew(:); munew(:); sigmanew(:)];
     nx2 = norm(thetanew - thetaold);   
@@ -296,35 +296,31 @@ while loopagain
     mnorm = median(stored_norm(max(1,iter-5):iter)); % median norm of parameters between iterations on a small window
     cond5  = mnorm <= initmodel.thnorm2; % threshold 1
     cond5c = mnorm <= initmodel.thnorm2/10;% sometimes likelihood oscillates so the norm will stop the process
+    
     % if iter exceeds limits or norm of parameters between two iterations is
     % very low or likelihood does not increase and norm of parameters between 
     % two iterations is low then convergence reached
-    if (cond5 && cond2) || cond3 || cond5c
+    if (cond5 && cond2) || cond3 || cond5c || cond2b 
         loopagain = false;
     end    
     if initmodel.verbosity
         fprintf('---------------- Stats convergence ---------------- \n')
-        fprintf('||xnew-xold||=%f (th=%f)\n',nx2,initmodel.thnorm2);
-        %fprintf('delta_loglik/avg_loglik=%f (th=%1.10f) \n',delta_loglik / avg_loglik,initmodel.deltaJmintoExit)
-        fprintf('LLnew-LLold=%f (th=%1.10f) \n',LLnew-LL0,initmodel.thresholdLLdiff)
+        fprintf('AVG( || xnew-xold || ) = %f (th=%f)\n',mnorm,initmodel.thnorm2);
+        fprintf('AVG( | LLnew-LLold | ) = %f (th=%1.10f) \n',llmov,initmodel.thresholdLLdiff)
         fprintf('-------------------------------------------- \n')
     end
     
     if LLnew - LL0 < -1e-3 
-        if cases>maxCases
+        fprintf('\n--> !! Likelihood decreases substantially (%d/%d), continue some iterations to confirm.\n',cases,maxCases);
+        cases = cases + 1;
+        if cases >= maxCases
             % STOP algorithm because of numerical problems (rare in general)
             if initmodel.verbosity
-                warning('Convergence pb? (LLold>LLnew) - get out.')
+                warning('Convergence pb? (LLold > LLnew) -> get out.')
             end
             modele.convergenceProblem = true; 
-            modele.convergenceProblemMessage = 'Convergence pb? (LLold>LLnew) - get out.';
+            modele.convergenceProblemMessage = 'Convergence pb? (LLold > LLnew) -> get out.';
             pause(1), break;
-        else
-            cases=cases+1;
-            if initmodel.verbosity
-                fprintf('\n-->[5] Likelihood decreases substantially (%d/%d), continue some iterations to confirm.\n',cases,maxCases);
-            end
-            loopagain = not(cond5);
         end
     else
         if initmodel.verbosity
@@ -381,11 +377,12 @@ modele.loglik = LL0;
 modele.totaltime = totaltime;
 modele.history_loglik = histLL;
 modele.initmodel = initmodel;
-modele.y = yold;
+%modele.y = yold;
 modele.x = xold;
 modele.nb_clusters = K;
 modele.T = T;
 modele.L = L;
+modele.conditionsConvergence = [cond5 cond2 cond3 cond5c cond2b];
 modele.initmodel = initmodel;
 stored_norm(iter:end)=[];
 modele.normParameters = stored_norm; 
@@ -406,12 +403,12 @@ modele.criteria.AIC = -2*modele.loglik + 2*p; % to be minimised
 modele.criteria.BIC = -2*modele.loglik + p*log(modele.L); % to be minimised
 % Entropy can be regarded as a penalty for the observed-datalikelihood  
 % when the estimated clusters are not well separated
-modele.criteria.conditional_entropy = -sum( modele.y .* log( modele.y + double(modele.y == 0)), 'all' );
-[valueshard_partition, idxhard_partition] = max(modele.y,[],2); % max a posteriori (MAP)
+modele.criteria.conditional_entropy = -sum( yold .* log( yold + double(yold == 0)), 'all' );
+[valueshard_partition, idxhard_partition] = max(yold,[],2); % max a posteriori (MAP)
 c = zeros(K,L); % make 0-1 encoding of MAP 
 c(idxhard_partition' + [0:K:K*L-1]) = 1;
-modele.criteria.hardclustering_entropy = -sum(sum( c' .* log( modele.y + double(modele.y == 0) ), 2),1);
-% modele.criteria.softclustering_entropy = -sum(sum( valueshard_partition .* log( modele.y + double(modele.y == 0) ), 2), 1);
+modele.criteria.hardclustering_entropy = -sum(sum( c' .* log( yold + double(yold == 0) ), 2),1);
+% modele.criteria.softclustering_entropy = -sum(sum( valueshard_partition .* log( yold + double(yold == 0) ), 2), 1);
 modele.criteria.ICL = modele.criteria.BIC + 2*modele.criteria.hardclustering_entropy; % mixmod.org, equation 27
 % modele.criteria.ICL2 = modele.criteria.BIC + 2*modele.criteria.softclustering_entropy; 
         

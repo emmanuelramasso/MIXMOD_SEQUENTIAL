@@ -53,6 +53,7 @@ try % STATS TOOLBOX AVAILABLE ?
     true_model.useExternalFunctions = false;
 catch
     true_model.useExternalFunctions = true;
+    warning('Not ensured to reproduce exactly the results of the paper, toolbox missing')
 end
 
 % generate data

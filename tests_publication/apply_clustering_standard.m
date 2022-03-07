@@ -17,10 +17,13 @@ for k=setofK
             'options',options); %diagonal
         clusters = cluster(gmfit,X);
             
-    else    
+    elseif ~strcmp(method,'GK')    
         E = evalclusters(X,method,criterion,'klist',k);
         clusters = E.OptimalY;
-    end    
+    else
+        %clusters = GK_multi_init(X, temps, k, 1:size(X,2), [], [], 'kmeans');
+        clusters = GK_multi_init(X, temps, k, 1:size(X,2), [], [], 'gmm1');
+    end
     
     ARI_est = [ARI_est valid_RandIndex(clusters,Ytrain)];
     

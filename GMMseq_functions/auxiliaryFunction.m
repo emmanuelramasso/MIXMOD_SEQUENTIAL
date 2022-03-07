@@ -58,7 +58,7 @@ if nargout > 1
     
     if initmodel.useMiniBatches
         r = randperm(L);
-        r = r(1:initmodel.sizeMiniBatches);
+        r = r(1:min(L,initmodel.sizeMiniBatches));
         y = y(r,:);
         time_repT = time_repT(r,:);
         L = length(r);

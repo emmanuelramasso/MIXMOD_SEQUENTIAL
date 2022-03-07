@@ -24,6 +24,10 @@
 clear all
 close all
 
+addpath '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME/ESSAIS_GMMSEQ_TRUSTR_TAUPRIOR'
+addpath '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME/ESSAIS_GMMSEQ_DESSERRAGE_CALCULE_SANS_INTERACTION'
+
+
 % file names
 if 1 % trust region
     s={ 'GMMSEQ_desserrage_GMMseq_B.mat',...
@@ -40,7 +44,12 @@ if 1 % trust region
         'GMMSEQ_D_trustregion_tauprior_lambda1000',...
         'GMMSEQ_E_trustregion_tauprior_lambda1000',...
         'GMMSEQ_F_trustregion_tauprior_lambda1000'};
-        
+    features = {'mesure_B_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat', ...
+        'mesure_C_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat', ...
+        'mesure_D_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat', ...
+        'mesure_E_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat', ...
+        'mesure_F_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'}
+    
 elseif 1 % quasi newton with different nb of iterations
     %s={ 'GMMSEQ_B_quasinewton_1iter',...
     %    'GMMSEQ_C_quasinewton_1iter',...
@@ -80,16 +89,21 @@ for ii=1:length(s)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % read the structure
     les_tau = []; % all clusters considered
-    les_tau7 = []; % 7 clustes only to see variations
+    les_tau7 = []; % 7 clusters only to see variations
     [nessais,nK,nM] = size(modelesGMMseq);
+    lesbeta = []; lesgamma = [];
     clear LL, idx = []; k = 1; lesK = [];
+    ari = [];
     for ne=1:nessais % trials
         for K=1:nK % clusters
             for m=1:nM % models for init
                 if ~isempty(modelesGMMseq{ne,K,m})
                     if modelesGMMseq{ne,K,m}.nb_clusters == 7 % special case - ground truth
                         les_tau7 = [les_tau7, modelesGMMseq{ne,K,m}.tau];
+                        lesbeta = [lesbeta, modelesGMMseq{ne,K,m}.beta];
+                        lesgamma = [lesgamma, modelesGMMseq{ne,K,m}.gamma];
                     end
+                    ari = [ari;modelesGMMseq{ne,K,m}.estim_ARI];
                     les_tau = [les_tau, modelesGMMseq{ne,K,m}.tau];
                     LL(k) =  modelesGMMseq{ne,K,m}.loglik;
                     idx = [idx ; [ne,K,m]];
@@ -99,7 +113,16 @@ for ii=1:length(s)
             end
         end
     end
-    
+    %figure,plot(lesbeta),title('Beta')
+    %figure,plot(lesgamma),title('Gamma')
+    %figure,semilogy(les_tau7,lesbeta,'.'),title('Tau/Beta')
+    %figure,semilogy(les_tau7,lesgamma,'.'),title('Tau/Gamma')
+    %[p,pi] = GMMSEQ_test(modelesGMMseq{ne,K,m},X,temps);
+
+    %%cc = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/features_articles';
+    %%[Xtrain,Ytrain,temps,listFeatures,lesduree] = load_data_irt(cc, features{ii}, false);
+      
+        
     if 0
         % Case 1: All clusters and all trials and all initialisations
         [a,b]=hist(les_tau,[0:PASHIST:modelesGMMseq{1}.T]);
@@ -150,8 +173,12 @@ for ii=1:length(s)
         [ll,r] = max(LL(f));
         p(i) = f(r); 
         bestModel{i} = modelesGMMseq{idx(p(i),1),idx(p(i),2),idx(p(i),3)};
-        if bestModel{i}.nb_clusters == 7, ikp = i; end
-    end
+        if (contains(lower(s{ii}),'gmmseq_C') && bestModel{i}.nb_clusters == 6) || ...
+            (~contains(lower(s{ii}),'gmmseq_C') && bestModel{i}.nb_clusters == 7)
+                ikp = i;
+                arigmmseqsansprior = bestModel{i}.estim_ARI;               
+        end        
+    end        
     [[0 10 20 30 40 50 60]; bestModel{ikp}.tau] % should be close
     
     % Plot MDS
@@ -180,6 +207,7 @@ for ii=1:length(s)
     saveas(ffig3,[s{ii}(1:end-4) '_considering_best_clusterings'],'fig')
     saveas(ffig3,[s{ii}(1:end-4) '_considering_best_clusterings'],'epsc')
     
+    les_tau_sans_prior = les_tau;
     
     %################################################################
     
@@ -211,18 +239,25 @@ for ii=1:length(s)
         
         % Case 3: considering best model in terms of likelihood
         % for each k, select the best model
-        u = unique(lesK); u(isinf(u)) = []; 
+        % with prior only K=7 was treated
+        u = unique(lesK); u(isinf(u)) = [];
         p = zeros(length(u),1);
         clear bestModel
+        ikp = 1;
         for i=1:length(u)
             f = find(lesK==u(i));
             [ll,r] = max(LL(f));
             p(i) = f(r);
             bestModel{i} = reswithPriors.modelesGMMseq{idx(p(i),1),idx(p(i),2),idx(p(i),3)};
+            if (contains(lower(s{ii}),'gmmseq_c') && bestModel{i}.nb_clusters == 6) || ...
+                    (~contains(lower(s{ii}),'gmmseq_c') && bestModel{i}.nb_clusters == 7)
+                ikp = i;
+                arigmmseqavecprior = bestModel{i}.estim_ARI;
+            end
         end
-        assert(length(bestModel)==1);
-        bestModel{1}.estim_ARI
+        bestModel{1}.estim_ARI, arigmmseqavecprior
         
+
         % histogramme des tau sur les meilleurs modeles
         les_tau = [];
         for i=1:length(bestModel)
@@ -254,7 +289,74 @@ for ii=1:length(s)
         saveas(ffig3,[s{ii}(1:end-4) '_considering_best_clusterings_with_regul'],'fig')
         saveas(ffig3,[s{ii}(1:end-4) '_considering_best_clusterings_with_regul'],'epsc')
                 
+        %%%%%%%%%%%%
+        % https://developers.google.com/machine-learning/crash-course/classification/precision-and-recall?hl=fr
+        % What proportion of positive detection was actually correct?
+        % precision: acc=TP/(TP+FP);
+        % => A model that produces no false positives has a precision of 1.0.
+        % What proportion of actual positive detection was identified correctly?
+        % recall: TP/(TP+FN);
+        % => A model that produces no false negatives has a recall of 1.0.
+        % To compute TP, just take the following rule:
+        % if the i-th onset estimated is within [true-t1,true+t2]
+        % then TP = TP + 1. If several onsets fall within, only one is counted.
+        % To compute FP: it relates to the nb of onsets outside the interval.
+        % To compute FN: it relates to the nb of times there is no
+        % fall within intervals.
+        cc = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/features_articles';
+        [Xtrain,Ytrain,temps,listFeatures,lesduree] = load_data_irt(cc, features{ii}, false);
+        [onsets_true,pb] = findOnsets(Ytrain,temps,1);
+        if pb~=0 && ~contains(lower(s{ii}),'gmmseq_c')
+            assert(pb==0);
+        elseif contains(lower(s{ii}),'gmmseq_c')
+            if numel(find(Ytrain==5))>0
+                error('?')
+            end
+            Ytrain(find(Ytrain==6))=5;
+            Ytrain(find(Ytrain==7))=6;
+            [onsets_true,pb] = findOnsets(Ytrain,temps,1);
+        end
         
+        onsets = {les_tau_sans_prior, les_tau};
+        t1=0.5; % seconds
+        t2=0.5; % seconds
+        
+        TP = zeros(length(onsets),1);
+        FN = zeros(length(onsets),1);
+        FP = zeros(length(onsets),1);
+        acc = zeros(length(onsets),1);
+        rec = zeros(length(onsets),1);
+        f1 = zeros(length(onsets),1);
+        e = zeros(length(onsets),1);
+        
+        for j=1:length(onsets)
+            
+            eval_onsets = zeros(1,length(onsets_true));
+            for i = 1:length(onsets{j})
+                % is the onsets_est(i) with [onsets_true-t1, onsets_true+t2] ?
+                f = find(onsets{j}(i) >= onsets_true-t1 & onsets{j}(i) <= onsets_true+t2);
+                if length(f)>1 
+                    error('??')
+                elseif length(f)==0
+                    % Wrong detection is a FP it is outside all intervals
+                    FP(j) = FP(j) + 1;
+                else
+                    eval_onsets(f) = eval_onsets(f)+1;
+                end
+            end
+            FN(j) = sum(eval_onsets == 0);
+            TP(j) = sum(eval_onsets > 0); % count only one onsets as positive
+            acc(j) = TP(j) / (TP(j) + FP(j));
+            rec(j) = TP(j) / (TP(j) + FN(j));
+            f1(j) = 2*acc(j)*rec(j) / (acc(j) + rec(j));
+            p=eval_onsets/sum(eval_onsets);
+            e(j) = -sum(p.*log2(p+(p==0)))/log2(length(p));
+        end 
+         
+        t=array2table([acc,rec,e,[arigmmseqsansprior ; arigmmseqavecprior]],'VariableNames',{'accuracy' 'recall' 'entropy' 'ARI'});
+        t=addvars(t, {'GMMSEQ w/o prior on onsets';'GMMSEQ with prior on onsets'}, 'NewVariableNames', 'Algo', 'Before', 'accuracy')
+        table2latex(t,['tab_withoroutprior' s{ii}])
+    
     end
     
     

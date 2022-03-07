@@ -2,7 +2,7 @@
 % It is not a "generic" code -> to be adapted for your case!
 % Can reproduce the results of paper [1] on real data, in particular the
 % histograms of onsets. For reproducing the figures on ARI with comparison
-% to kmeans, GMM and linkage, please have a look on "comparison.m".
+% to kmeans, GMM and hierarchical clustering, please have a look on "comparison.m".
 %
 %   [1] Emmanuel Ramasso, Thierry Denoeux, Gael Chevallier, Clustering 
 %   acoustic emission data stream with sequentially appearing clusters 
@@ -30,7 +30,9 @@ addpath 'netlab3.3'
 
 %%%%%VERIFIER DOSSIER!% c ='/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/';
 %c = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram';
-c = '/home/emmanuel.ramasso/Documents/CODES/MATLAB';
+c = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/features_articles';
+%c = '/home/emmanuel.ramasso/Documents/CODES/MATLAB';
+% addpath '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME'
 
 switch dataCampaign
     case 'B'
@@ -52,7 +54,7 @@ switch dataCampaign
 end
 
 % load data
-[Xtrain,Ytrain,temps,listFeatures,lesduree,nbFeatInit] = load_data_irt(c, n, false);
+[Xtrain,Ytrain,temps,listFeatures,lesduree] = load_data_irt(c, n, false);
 % Xtrain = zscore(Xtrain(:,1:length(listFeatures))); % SANS INTERACTION
 [Xtrain, mD, sD] = zscore(Xtrain);
 labelsTrain = unique(Ytrain);
@@ -67,7 +69,7 @@ figure,g=gscatter(X(:,1),X(:,2),Ytrain); title('PCA1-2')
 set(gca,'fontsize',22)
 for i=1:length(g), set(g(i),'Marker','s'), end
 xlabel('PC1'),ylabel('PC2')
-plotmatrix_mine(X(:,1:min(10,size(X,2))),Ytrain)
+% % plotmatrix_mine(X(:,1:min(10,size(X,2))),Ytrain)
 
 disp('Size of X')
 disp(size(X))
@@ -124,15 +126,17 @@ for essai = 1:nessais
             %optimMethod = "schmidt";
             %optimMethod="linesearch";
             optimMethod = "matlab-explicitgrad"; % best results overall with this method
-            useMiniBatches = true;
+            useMiniBatches = true; % advised with trust-region algorithm, ie "matlab-explicitgrad"
 
 
             while cont && it <= nbitmax
                 
-                try                     
+                try    % allows to manage problems due to "matlab-quasinewton" which sometimes rises an error         
                     
                     initmodel = GMMSEQ_init(X,temps,K,meth{s},optimMethod,useMiniBatches,sharedCovariances);
                     disp(initmodel.minFunc.name)
+
+                    initmodel.verbosity=1
                     
                     if takePrior
                         initmodel.penalisation = penalisation;
@@ -215,7 +219,7 @@ for essai = 1:nessais
     end
 end
 
-save(['GMMSEQ_' saveName])
+save(['2022_E_GMMSEQ_' saveName])
 
 
 
