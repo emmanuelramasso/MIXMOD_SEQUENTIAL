@@ -24,7 +24,7 @@ The current implementation supports Gaussian distribution, but soon other distri
 
 Add some folders to the MATLAB path:
 ```commandline
-$ addpath GMMseq_functions tests features_measB_ORIONAE_datasets utils
+$ pathdefmixmod
 ```
 
 The implementation is based on three main codes: 
@@ -33,22 +33,22 @@ The implementation is based on three main codes:
 3. `GMMSEQ_test.m`: to test a GMMSEQ model on new data.
 
 Their use is illustrated with as many comments as possible in `main_test_simulated_data.m`.
-
+Some illustrations are provided with real data [2] in `main_test_real_data.m`.
 
 ## Reproduce the results of the paper
 
 Have a look in repository `tests`:
 - `main_test_simulated_data_withCriteres_v2.m` allows to focus on Section 1 of the tests.
-- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features for this part. For information, you can reproduce results of [1] by using features provided in the Drive-link below. 
+- `test_selection_models_GMMSEQ_via_histTau.m` allows to focus on Section 2 of the tests. Note that here you need your own features for this part. For information, you can reproduce results of [1] by using features provided in the Drive's link below. 
 
-The set of .mat files available at the [repository link](https://drive.google.com/drive/folders/1hO_UegoLQTc0oDB8uRYsfLsKK94Gg7KM?usp=sharing) represent a set of features obtained from raw series of measurements in ORION-AE [2]. Features have been obtained by a method described in [1], in Section "Signal Processing" relying on [3]. These features matrices (using variables "P3") allow to reproduce the figures of the paper. 
+The set of .mat files available at the [repository link](https://drive.google.com/drive/folders/1H413RxYu4ya7YMEgF_lTh_fHr7flvvOO?usp=sharing) represent a set of features obtained from raw series of measurements in ORION-AE [2]. Features have been obtained by a method described in [1], in Section "Signal Processing" relying on [3]. These features matrices (using variables "P3") allow to reproduce the figures of the paper. 
 
 ## Cite
 
 If you make use of this code in your work, please refer to [1]:
 
 ```
-@article{gmmseq_acoustic_emission_2021,
+@article{1,
       title={Clustering acoustic emission data stream with sequentially appearing clusters using mixture models}, 
       author={Emmanuel Ramasso and Thierry Denoeux and Gael Chevallier},
       year={2021},
@@ -61,13 +61,15 @@ If you make use of this code in your work, please refer to [1]:
 If you make use of the data, please refer to [2]:
 
 ```
-@article{orion_ae_datasets,
-      title={ORION-AE: Multisensor acoustic emission datasets reflecting supervised untightening of bolts in a jointed structure under vibration}, 
-      author={Benoit Verdin and G. Chevallier and Emmanuel Ramasso},
-      year={2021},
-      journal={Data-in-Brief},
-      note={Submitted},
-      publisher={Elsevier}
+@article{2,
+  title={Monitoring a Bolted Vibrating Structure Using Multiple Acoustic Emission Sensors: A Benchmark},
+  author={Emmanuel Ramasso and Benoit Verdin and Gael Chevallier},
+  journal={Data},
+  volume={7},
+  number={3},
+  pages={31},
+  year={2022},
+  publisher={Multidisciplinary Digital Publishing Institute}
 }
 ```
 
@@ -75,7 +77,7 @@ If you make use of the data, please refer to [2]:
 If you make use of the features, please refer to [3]:
 
 ```
-@article{detection_ae_signals_noise,
+@article{3,
   title={A signal processing approach for enhanced Acoustic Emission data analysis in high activity systems: Application to organic matrix composites},
   author={Kharrat, Mohamed and Ramasso, Emmanuel and Placet, Vincent and Boubakar, ML},
   journal={Mechanical Systems and Signal Processing},
