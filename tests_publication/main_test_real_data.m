@@ -1,14 +1,17 @@
 % This code runs GMMseq on real data considering differents campaigns
 % It is not a "generic" code -> to be adapted for your case!
-% 
+% This file simply learns a model and makes inference. The model obtained
+% is not ensured to be the best one, a search should be made on several
+% models as done in other files. 
+%
 %   REFERENCE
-%   
-%   This implementation has been made and shared in the context of a 
+%
+%   This implementation has been made and shared in the context of a
 %   project between FEMTO-ST (Besançon, France) and UTC (Compiègne, France)
 %   which yielded the following paper:
 %
-%   [1] Emmanuel Ramasso, Thierry Denoeux, Gael Chevallier, Clustering 
-%   acoustic emission data stream with sequentially appearing clusters 
+%   [1] Emmanuel Ramasso, Thierry Denoeux, Gael Chevallier, Clustering
+%   acoustic emission data stream with sequentially appearing clusters
 %   using mixture models, Mechanical Systems and Signal Processing, 2021.
 %
 %
@@ -22,29 +25,28 @@ clear all
 
 dataCampaign = input('Data B C D E F ? : ')
 
-%addpath '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/GITHUB/clustering_fusion/utils'
-addpath '/home/emmanuel.ramasso/Documents/CODES/MATLAB/clustering_fusion/utils'
-addpath 'netlab3.3'
+% addpath '/home/emmanuel.ramasso/Documents/CODES/MATLAB/clustering_fusion/utils'
+% addpath 'netlab3.3'
 
-%%%%%VERIFIER DOSSIER!% c ='/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/';
-c = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram';
+% Path to data
+c = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/features_articles';
 
 switch dataCampaign
     case 'B'
         n = 'mesure_B_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
         
     case 'C'
-            n = 'mesure_C_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
-
-    case 'D'        
-            n = 'mesure_D_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
-
+        n = 'mesure_C_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
+        
+    case 'D'
+        n = 'mesure_D_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
+        
     case 'E'
-            n = 'mesure_E_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
-    
+        n = 'mesure_E_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
+        
     case 'F'
-            n = 'mesure_F_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
-    
+        n = 'mesure_F_DESSERRAGE_TH2_db45_14_sqtwolog_30_80_1100.mat'
+        
     otherwise error('??')
 end
 
@@ -71,14 +73,14 @@ K = 7
 sharedCovariances = false;
 optimMethod = "matlab-explicitgrad";%"schmidt"; %"matlab-quasinewton"; %"trust-region"; % best results overall with this method
 initMethod = 'gmm';
-useMiniBatches = size(X,1) > 2000 && lower(optimMethod)=="matlab-explicitgrad"; 
+useMiniBatches = size(X,1) > 2000 && lower(optimMethod)=="matlab-explicitgrad";
 
 % init model GMMseq
 initmodel = GMMSEQ_init(X,temps,K,initMethod,optimMethod,useMiniBatches,sharedCovariances);
 initmodel.minFunc.options.MaxIterations = 1;
 initmodel.useMiniBatches = true; % dependence to sampling
 
-% in case 
+% in case
 %if 0
 %    penalisation.type = 'l2';
 %    penalisation.tauprior = linspace(0,(K-1)/K,K)*(max(temps)-min(temps))+min(temps)

@@ -26,13 +26,9 @@ pathdefmixmod;
 dataCampaign = input('Data B C D E F ? : ')
 desserrage = true;
 
-%%%%%VERIFIER DOSSIER!% c ='/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/';
-% c = '/home/emmanuel.ramasso/Documents/DATA/IRT/avecHitDetectionEtScalogram';
-% c = '/home/emmanuel.ramasso/Documents/CODES/MATLAB';
+% path to features
 c = '/home/emmanuelramasso/OneDrive/Documents/RECHERCHE/3-PROJETS/Coalescence_IRT/manip ORION/mars 2019/session 6/featureExtraction/avecHitDetectionEtScalogram/features_articles';
-% rr = '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME/GMM_new/VARIANTES_OPTIMIZERS'
-% %rr = '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME/GMM_new1';
-% %rr = '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/GMM_test/VARIANTES_OPTIMIZERS';
+% path to models generated
 rr = '/home/emmanuelramasso/OneDrive/Documents/PROGRAMMES/dev/PROJETS/GMM_TIME/ESSAIS_GMMSEQ_DESSERRAGE_CALCULE_SANS_INTERACTION';
 
 switch dataCampaign
@@ -69,11 +65,10 @@ switch dataCampaign
     otherwise error('??')
 end
 
-% charge les données
+% load data
 useInteract = false;
 [Xtrain,Ytrain,temps,listFeatures,lesduree,nbFeatInit] = load_data_irt(c, n, useInteract);
-% Xtrain = zscore(Xtrain(:,1:length(listFeatures))); % SANS INTERACTION
-[Xtrain, mD, sD] = zscore(Xtrain); % PREND TOUT
+[Xtrain, mD, sD] = zscore(Xtrain); 
 
 %rng('default')
 %Y = tsne(Xtrain(1:10:end,:),'Algorithm','exact','Standardize',true,'Perplexity',20);
@@ -92,9 +87,9 @@ figure,g=gscatter(X(:,1),X(:,2),Ytrain); title('PCA1-2')
 set(gca,'fontsize',22)
 for i=1:length(g), set(g(i),'Marker','s'), end
 xlabel('PC1'),ylabel('PC2')
-% plotmatrix_mine(X(:,1:min(10,size(X,2))),Ytrain)
 
 if 0
+    % some tests
     rng('default')
     Y = tsne(X(1:10:end,:),...
         'Algorithm','exact',...
@@ -125,39 +120,13 @@ if 0
     cluster_firstphase = fast_tsne(X, opts);
     figure,g=gscatter(cluster_firstphase(:,1),cluster_firstphase(:,2),Ytrain);
 
-
 end
 
 Kall = 4:14 % nb of clusters
 
-if 0
-    % CHOIX DES CLUSTERS AVEC CRITERES STANDARDS
-    E_kmeans_DB = evalclusters(X,'kmeans','DaviesBouldin','klist',Kall);
-    figure,plot(E_kmeans_DB);
-    
-    E_kmeans_CH = evalclusters(X,'kmeans','CalinskiHarabasz','klist',Kall);
-    figure,plot(E_kmeans_CH);
-    
-    E_gmm_DB = evalclusters(X,'gmdistribution','DaviesBouldin','klist',Kall);
-    figure,plot(E_gmm_DB);
-    
-    E_gmm_CH = evalclusters(X,'gmdistribution','CalinskiHarabasz','klist',Kall);
-    figure,plot(E_gmm_CH);
-    
-    E_link_DB = evalclusters(X,'linkage','DaviesBouldin','klist',Kall);
-    figure,plot(E_link_DB);
-    
-    E_link_CH = evalclusters(X,'linkage','CalinskiHarabasz','klist',Kall);
-    figure,plot(E_link_CH);
-    
-    % FAIRE GMM+AIC et BIC
-    % - - - -
-end
-
-
 close all
 
-% CHOIX DES CLUSTERS AVEC CRITERES ONSETS
+% Select clustering based on onsets
 clear noms onsets 
 ari = zeros(4,length(Kall)); % ARI for each number of clusters
 [onsets{1},ari(1,:)]=apply_clustering_standard(X,temps,'kmeans','DaviesBouldin',Kall,dataCampaign,lesduree,Ytrain);
@@ -166,9 +135,13 @@ noms{1}='Kmeans';
 noms{2}='GMM';
 [onsets{3},ari(3,:)]=apply_clustering_standard(X,temps,'linkage','DaviesBouldin',Kall,dataCampaign,lesduree,Ytrain);
 noms{3}='HC';
-[onsets{4},ari(4,:)]=apply_clustering_standard(X,temps,'GK','DaviesBouldin',Kall,dataCampaign,lesduree,Ytrain);
-noms{4}='GK';
-
+try
+    [onsets{4},ari(4,:)]=apply_clustering_standard(X,temps,'GK','DaviesBouldin',Kall,dataCampaign,lesduree,Ytrain);
+    noms{4}='GK';
+catch
+    ari(end,:)=[];
+    warning('GK algorithm not found')
+end
 
 o=cell2mat(onsets); 
 leg={};
@@ -211,7 +184,7 @@ for i=1:length(u)
     arigmmseq = [arigmmseq; bestModel{i}.estim_ARI];
 end
 
-% histogramme des tau sur les meilleurs modeles
+% histogram of tau for best models
 les_tau = [];
 for i=1:length(bestModel)
     les_tau = [les_tau bestModel{i}.tau];
@@ -317,10 +290,16 @@ figure,hold on
 plot(Kall,ari(1,:),'s-.','linewidth',2,'markersize',10)
 plot(Kall,ari(2,:),'x-.','linewidth',2,'markersize',10)
 plot(Kall,ari(3,:),'o-.','linewidth',2,'markersize',10)
-plot(Kall,ari(4,:),'^-.','linewidth',2,'markersize',10)
+try 
+    plot(Kall,ari(4,:),'^-.','linewidth',2,'markersize',10)
+    s = {'Kmeans','GMM','Linkage','GK','GMMSEQ'};
+catch
+    % GK algorithm not found
+    s = {'Kmeans','GMM','Linkage','GMMSEQ'};
+end
 h=plot(Kall,arigmmseq,'d-.','linewidth',3,'markersize',10);
 set(h,'MarkerFaceColor',h.Color);
-legend('Kmeans','GMM','Linkage','GK','GMMSEQ')
+legend(s)
 set(gca,'fontsize',24)
 
 xlabel('Number of clusters','interpreter','latex','fontsize',26),

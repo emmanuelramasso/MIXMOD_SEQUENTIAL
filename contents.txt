@@ -8,7 +8,7 @@
 Directories:
 - utils: some codes for some plots
 - GMMseq_functions: codes related to the optimization of GMMseq
-- tests_publication: test codes used for the paper. The codes are not very well documented in the repo. Send an email for further info.
+- tests_publication: test codes used for the paper. The codes are not all very well documented in the repo. Send an email for further info. The best to start is main_test_simulated_data.m. 
 - external: a set of functions you an use if you do not have machine learning and optimisation toolboxes of matlab. Not sure that results will be the same if this option is activated. Matlab 2020b was used for the tests. 
 The root directory also contains main_test_simulated_data.m that shows how to use the GMMSEQ_init, train and eval for your data. 
 
@@ -23,10 +23,13 @@ We run several initialisations of GMMseq and select the best model
 Results are plotted. Reproduce the results on simulated data.
 
 main_test_simulated_data_withCriteres_v2.m
-Similar to the previous with more figures and criterion (AIC and so on).
+Similar to the previous with more figures and criterion (AIC and so on) and a search of the best model.
+
+main_test_real_data.m
+Run GMMseq on real data without looking for the best model.
 
 test_selection_models_GMMSEQ_via_histTau.m
-Run GMMseq on real data.
+Run GMMseq on real data with a search a good model.
 
 
 //////////////////////////////
